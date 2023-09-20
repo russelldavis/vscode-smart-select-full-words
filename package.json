@@ -26,20 +26,27 @@
 			"title": "Smart Select Full Words",
 			"properties": {
 				"smartSelectFullWords.wordRangeRegex": {
-					"description": "The regular expression used to get the word range (via vscode's getWordRangeAtPosition API). This regex must be stateless, as vscode applies it iteratively on 15-character chunks of text. The result is then tested against wordRegex (which can be stateful).",
+					"description": "The regex used to get the word range (via vscode's getWordRangeAtPosition API). This regex must be stateless, as vscode applies it iteratively on 15-character chunks of text. The result is then tested against wordRegex (which can be stateful).",
 					"type": "string",
 					"default": "([^`'\"\\s]+)"
 				},
-				"smartSelectFullWords.resultRegex": {
-					"description": "The regular expression applied to the result of the wordRangeRegex. If it matches, the match will be smart selected.",
+				"smartSelectFullWords.immediateSelectionRegex": {
+					"description": "This regex is applied to the result of the wordRangeRegex. If it matches, the match will be smart selected immediately (bypassing selection of smaller words) when using the `smartSelectFullWords.expandSelection` command. After running that command, you can still get the smaller selection by subsequently running the builtin Shrink Selection command.",
 					"type": "string",
 					"//": "This matches words with dashes, as well as tailwind syntax: foo-bar/50, foo-bar/[0.2], foo-bar-[baz_qux(jib)]",
 					"default": "-*\\w+-[\\w\\-]*((/[\\d.\\[\\]]+)|((?<=-)\\[.*))?"
 				},
-				"smartSelectFullWords.selectImmediately": {
-					"description": "When enabled, matching words are selected immediately (bypassing selection of smaller words) when using the `smartSelectFullWords.expandSelection` command. After running that command with this setting, you can still get to the smaller selection by using the builtin Shrink Selection command.",
-					"type": "boolean",
-					"default": true
+				"smartSelectFullWords.selectionRegexes": {
+					"description": "These regexes are applied to the result of the wordRangeRegex. Each one that matches will be added to the smart selection queue. (You'll need to keep expanding the selection to get past any smaller ones.)",
+					"type": "array",
+					"//": [
+						"dotted.words",
+						"URLs"
+					],
+					"default": [
+						"[\\w.]+",
+						"\\w{1,9}://[-\\w@:%.+~#=]+\\.\\w+\b[-\\w()@:%+.~#?&/=]*"
+					]
 				}
 			}
 		}

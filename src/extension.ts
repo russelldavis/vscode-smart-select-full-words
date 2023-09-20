@@ -6,6 +6,9 @@ import * as vs from 'vscode';
 // https://stackoverflow.com/questions/56652088/in-vscode-how-do-i-select-a-word-programmatically
 // https://stackoverflow.com/questions/52760138/how-to-select-whole-word-under-the-cursor-in-visual-studio-code
 
+
+let immediateSelectionRange: vs.SelectionRange | null = null;
+
 async function executeCommand(name: string): Promise<void> {
 	const success = await vs.commands.executeCommand(name);
 	// if (!success) {throw new Error(`Command "${name}" failed`);}
@@ -23,28 +26,40 @@ const COMMANDS = [
 	smartSelectFullWord,
 ] as const;
 
+function getMatchingRange(regex: RegExp, wordText: string, wordRange: vs.Range) {
+	const match = wordText.match(regex);
+	if (!match) return null;
+
+	const {start} = wordRange;
+	const resultCol = start.character + match.index!;
+	return new vs.SelectionRange(
+		new vs.Range(start.line, resultCol, start.line, resultCol + match[0].length)
+	);
+}
+
 export function activate(context: vs.ExtensionContext) {
 	const config = vs.workspace.getConfiguration("smartSelectFullWords");
 	vs.languages.registerSelectionRangeProvider({pattern: "**"}, {
-		provideSelectionRanges(document: vs.TextDocument, positions: vs.Position[], token: vs.CancellationToken): vs.ProviderResult<vs.SelectionRange[]> {
+		provideSelectionRanges(
+			document: vs.TextDocument,
+			positions: vs.Position[],
+			token: vs.CancellationToken
+		): vs.ProviderResult<vs.SelectionRange[]> {
 			console.log("bbbb");
+			
 			return positions.flatMap((position) => {
 				const wordRangeRegex = new RegExp(config.get("wordRangeRegex", ""));
-				const resultRegex = new RegExp(config.get("resultRegex", ""));
 				const wordRange = document.getWordRangeAtPosition(position, wordRangeRegex);
 				if (!wordRange) return [];
-				// console.log("ddddd", wordRange);
-				// console.log("eeee", wordRange!.start, wordRange!.end)
-
 				const wordText = document.getText(wordRange);
-				const match = wordText.match(resultRegex);
-				if (!match) return [];
 
-				const {start} = wordRange;
-				const resultCol = start.character + match.index!;
-				return new vs.SelectionRange(
-					new vs.Range(start.line, resultCol, start.line, resultCol + match[0].length)
-				);
+				const immediateSelectionRegex = new RegExp(config.get("immediateSelectionRegex", ""));
+				immediateSelectionRange = getMatchingRange(immediateSelectionRegex, wordText, wordRangeRegex);
+
+				const selectionRanges = config.get<string[]>("selectionRegexes", []).map(regexStr => {
+					return getMatchingRange(new RegExp(regexStr), wordText, wordRange);
+				});
+				return [immediateSelectionRange, ...selectionRanges].filter(Boolean);
 			});
 		}
 	});
