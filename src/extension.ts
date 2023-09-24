@@ -7,68 +7,119 @@ import * as vs from 'vscode';
 // https://stackoverflow.com/questions/52760138/how-to-select-whole-word-under-the-cursor-in-visual-studio-code
 
 
-let immediateSelectionRange: vs.SelectionRange | null = null;
+const immediateSelectionNameRegex = /^![\d!]*:/;
+let immediateSelectionRange: vs.Range | null = null;
 
 async function executeCommand(name: string): Promise<void> {
 	const success = await vs.commands.executeCommand(name);
 	// if (!success) {throw new Error(`Command "${name}" failed`);}
 }
 
-async function smartSelectFullWord() {
-	const editor = vs.window.activeTextEditor;
-	if (!editor) {
-		return;
+async function expand(editor: vs.TextEditor) {
+	for(let i = 0; i < 30; i++) {
+		await executeCommand('editor.action.smartSelect.expand');
+		if (!immediateSelectionRange) return;
+		if (editor.selections.length > 1) {
+			throw new Error("immediateSelectionRange should be null where there are multiple selections");
+		}
+		const sel = editor.selection;
+		const cmp = compareRanges(immediateSelectionRange, sel);
+		if (cmp === 0) {
+			immediateSelectionRange = null;
+			return;
+		}
+		if (cmp > 0) {
+			// editor.selection = new vs.Selection(immediateSelectionRange.start, immediateSelectionRange.end);
+			const msg = "smartSelectFullWords !regex match was preempted by another smartSelect range (possibly from another provider)";
+			vs.window.showWarningMessage(msg);
+			console.log("text:", editor.document.getText(immediateSelectionRange));
+			immediateSelectionRange = null;
+			throw new Error(msg);
+		}
 	}
-	await executeCommand('editor.action.smartSelect.expand');
+	throw new Error("smartSelectFullWords.expand didn't converge");
 }
 
-const COMMANDS = [
-	smartSelectFullWord,
-] as const;
-
-function getMatchingRange(regex: RegExp, wordText: string, wordRange: vs.Range) {
-	const match = wordText.match(regex);
-	if (!match) return null;
-
-	const {start} = wordRange;
-	const resultCol = start.character + match.index!;
-	return new vs.SelectionRange(
-		new vs.Range(start.line, resultCol, start.line, resultCol + match[0].length)
-	);
+function compareRanges(a: vs.Range, b: vs.Range) {
+	if (a.start.isBefore(b.start)) {
+		return -1;
+	} else if (b.start.isBefore(a.start)) {
+		return 1;
+	} else if (a.end.isBefore(b.end)) {
+		return 1;
+	} else if (b.end.isBefore(a.end)) {
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
 export function activate(context: vs.ExtensionContext) {
 	const config = vs.workspace.getConfiguration("smartSelectFullWords");
 	vs.languages.registerSelectionRangeProvider({pattern: "**"}, {
-		provideSelectionRanges(
-			document: vs.TextDocument,
-			positions: vs.Position[],
-			token: vs.CancellationToken
-		): vs.ProviderResult<vs.SelectionRange[]> {
-			console.log("bbbb");
+		provideSelectionRanges(document, positions) {
+			console.log("provideSelectionRanges");
+
+			const isSingleCursor = positions.length === 1;
+			let immediateSelectionName: string | null = null;
+			immediateSelectionRange = null;
 			
-			return positions.flatMap((position) => {
-				const wordRangeRegex = new RegExp(config.get("wordRangeRegex", ""));
-				const wordRange = document.getWordRangeAtPosition(position, wordRangeRegex);
-				if (!wordRange) return [];
-				const wordText = document.getText(wordRange);
+			return positions.map((position) => {
+				const regexes = config.get<Record<string,string>>("regexes", {});
+				const ranges = Object.entries(regexes).flatMap(([name, regexStr]) => {
+					if (!regexStr) return [];
 
-				const immediateSelectionRegex = new RegExp(config.get("immediateSelectionRegex", ""));
-				immediateSelectionRange = getMatchingRange(immediateSelectionRegex, wordText, wordRangeRegex);
+					const regex = new RegExp(regexStr);
+					const wordRange = document.getWordRangeAtPosition(position, regex);
+					if (!wordRange) return [];
 
-				const selectionRanges = config.get<string[]>("selectionRegexes", []).map(regexStr => {
-					return getMatchingRange(new RegExp(regexStr), wordText, wordRange);
+					const wordText = document.getText(wordRange);
+					const match = wordText.match(regex);
+					if (!match) return [];
+
+					const {start} = wordRange;
+					const resultCol = start.character + match.index!;
+					const range = new vs.Range(start.line, resultCol, start.line, resultCol + match[0].length);
+					if (
+						isSingleCursor &&
+						immediateSelectionNameRegex.test(name) &&
+						(!immediateSelectionName || name < immediateSelectionName)
+					) {
+						immediateSelectionName = name;
+						immediateSelectionRange = range;
+					}
+					console.log("matched:", wordText, "regex:", regexStr);
+					return range;
 				});
-				return [immediateSelectionRange, ...selectionRanges].filter(Boolean);
+				if (ranges.length === 0) {
+					return new vs.SelectionRange(new vs.Range(0, 0, 0, 0));
+				}
+				ranges.sort(compareRanges);
+				let last: vs.SelectionRange | undefined = undefined;
+				for (const range of ranges) {
+					if (last) {
+						if (last.range.isEqual(range)) continue;
+						if (!last.range.contains(range)) {
+							console.log(
+								"skipping:",
+								document.getText(range),
+								"not contained by:",
+								document.getText(last.range)
+							);
+							continue;
+						}
+					}
+					last = new vs.SelectionRange(range, last);
+					// console.log("providing:", document.getText(range));
+				}
+				return last!;
 			});
 		}
 	});
 
-	for (const cmd of COMMANDS) {
-		context.subscriptions.push(
-			vs.commands.registerCommand(cmd.name, cmd)
-		);
-	}
+	context.subscriptions.push(
+		vs.commands.registerTextEditorCommand("smartSelectFullWords.expand", expand)
+	);
 }
 
 export function deactivate() {}
