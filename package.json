@@ -32,13 +32,18 @@
 						"type": "string"
 					},
 					"// test url": "http://foo-bar.com:5555/index.html?foo=bar&baz=qux",
-					"// test tailwind": "foo-bar-[baz_qux(jib)] foo[bar] foo-bar/50, foo-bar/[0.2] foo/2",
+					"// test tailwind": "foo-bar-[rgb(1,2,3)] foo[bar] foo-bar/50, foo-bar/[0.2] foo/2 foo@bar@[baz]",
 					"// test subwords": "foo_bar fooBar",
-					"// catch$all@words": "semicolon because we don't want to select `bar;` in `foo = bar;`",
+					"// test function": "foo(bar, 1, 'baz')",
+					"// test path": "foo /bar/baz/qux/ fizz",
+					"// catch$all@words1": "only excludes chars that can come directly after words in properly styled code",
+					"// catch$all@words2": "(don't want to select `foo(bar` in `foo(bar, baz)` or `baz;` in `foo = baz;`)",
+					"// catch$all@words3": "ends in \\w so we don't select periods at ends of sentences or `foo-` in `foo-[bar]`",
 					"default": {
 						"!: dashed-words": "[\\w\\-]+\\w",
 						"dashed-and-dotted.words": "[\\w\\-.]+\\w",
-						"catch$all@words": "[^\\s;'`\"]+(?<!\\.)"
+						"dashed-words with brackets (tailwind)": "[\\w\\-]+[-/]\\[[^\\]]*\\]",
+						"catch$all@words": "[^\\s;,(){}\\[\\]'`\"]+\\w"
 					}
 				}
 			}
