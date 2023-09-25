@@ -1,70 +1,19 @@
-# smart-select-full-words README
+# Smart Select Full Words
 
-This is the README for your extension "smart-select-full-words". After writing up a brief description, we recommend including the following sections.
+Adds custom full word selection (via regex config) to [smart select](https://www.youtube.com/watch?v=dO4SGAMl7uQ).
 
-## Features
+Without this extension, smart select won't select hyphenated words (e.g. foo-bar). This extension
+allows you to configure regular expressions that add additional ranges to smart select. By default,
+it adds hyphenated words, dotted-and-hyphenated words, tailwind custom variant syntax
+(foo-[bar(baz)]), and catchall words (for things like URLs in comments or strings).
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Take note of the [`editor.smartSelect.selectSubwords` setting](https://code.visualstudio.com/updates/v1_80#_skip-subword-when-shrinking-and-expanding-selection). When using this extension with the
+default config and the `smartSelectFullWords.expand` command, subwords will be selected regardless
+of this setting. However, when this this setting is enabled, after running
+`smartSelectFullWords.expand`, you can then run the Shrink Selection command to shrink the selection
+to the subword your cursor was on.
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+## Settings
+`smartSelectFullWords.regexes`: To disable a default value, set it to empty. If the name is prefixed by `!: `, the match will be selected immediately (bypassing selection of smaller words) when using the `smartSelectFullWords.expand` command (you can then shrink the selection to smaller words by running the builtin Shrink Selection command).
 
 **Enjoy!**

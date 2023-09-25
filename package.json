@@ -26,7 +26,7 @@
 			"title": "Smart Select Full Words",
 			"properties": {
 				"smartSelectFullWords.regexes": {
-					"description": "Text matching these regexes will be used by Smart Select. Set to empty to disable defaults. If the name is prefixed by `!: `, the match will be selected immediately (bypassing selection of smaller words) when using the `smartSelectFullWords.expand` command (you can then shrink the selection to smaller words by running the builtin Shrink Selection command).",
+					"description": "To disable a default value, set it to empty. If the name is prefixed by `!: `, the match will be selected immediately (bypassing selection of smaller words) when using the `smartSelectFullWords.expand` command (you can then shrink the selection to smaller words by running the builtin Shrink Selection command).",
 					"type": "object",
 					"additionalProperties": {
 						"type": "string"
