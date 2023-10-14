@@ -43,7 +43,7 @@
 						"!: dashed-words": "[\\w\\-]+\\w",
 						"dashed-and-dotted.words": "[\\w\\-.]+\\w",
 						"dashed-words with brackets (tailwind)": "[\\w\\-]+[-/]\\[[^\\]]*\\]",
-						"catch$all@words": "[^\\s;,(){}\\[\\]'`\"]+\\w"
+						"catch$all@words": "[^\\s;,<>(){}\\[\\]'`\"]+\\w"
 					}
 				}
 			}
