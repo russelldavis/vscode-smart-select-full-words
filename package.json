@@ -32,18 +32,18 @@
 						"type": "string"
 					},
 					"// test url": "http://foo-bar.com:5555/index.html?foo=bar&baz=qux",
-					"// test tailwind": "foo-bar-[rgb(1,2,3)] foo[bar] foo-bar/50, foo-bar/[0.2] foo/2 foo@bar@[baz]",
+					"// test tailwind": "foo-bar-[rgb(1,2,3)] group:data-[state=foo]:bar-[rgb(1,2,3)] foo-bar/50, foo-bar/[0.2] foo/2 foo@bar@[baz] foo[bar]",
 					"// test subwords": "foo_bar fooBar",
 					"// test function": "foo(bar, 1, 'baz')",
 					"// test path": "foo /bar/baz/qux/ fizz",
-					"// catch$all@words1": "only excludes chars that can come directly after words in properly styled code",
-					"// catch$all@words2": "(don't want to select `foo(bar` in `foo(bar, baz)` or `baz;` in `foo = baz;`)",
-					"// catch$all@words3": "ends in \\w so we don't select periods at ends of sentences or `foo-` in `foo-[bar]`",
+					"// catch$all@words1": "only excludes chars that can come directly after words in properly styled code (don't want to select `foo(bar` in `foo(bar, baz)`, `Foo<T` in `type Foo<T extends Bar>`, or `baz;` in `foo = baz;`)",
+					"// catch$all@words2": "starts with \\w so we don't select parts of bigger compound words (like `:hidden` in `data-[state=closed]:hidden`)",
+					"// catch$all@words3": "ends with \\w so we don't select periods at ends of sentences or `foo-` in `foo-[bar]`",
 					"default": {
-						"!: dashed-words": "[\\w\\-]+\\w",
+						"!2: dashed-words": "[\\w\\-]+\\w",
 						"dashed-and-dotted.words": "[\\w\\-.]+\\w",
-						"dashed-words with brackets (tailwind)": "[\\w\\-]+[-/]\\[[^\\]]*\\]",
-						"catch$all@words": "[^\\s;,<>(){}\\[\\]'`\"]+\\w"
+						"!1: tailwind rules": "([\\w\\-]+\\w(-\\[[^\\]]*\\])?(:|$|(?=[^\\w\\-])))+(\\/(\\d+|\\[[\\d.]+\\]))?",
+						"catch$all@words": "\\w[^\\s;,<>(){}\\[\\]'`\"]+\\w"
 					}
 				}
 			}
