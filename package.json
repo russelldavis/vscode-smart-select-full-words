@@ -36,6 +36,7 @@
 					"// test subwords": "foo_bar fooBar",
 					"// test function": "foo(bar, 1, 'baz')",
 					"// test path": "foo /bar/baz/qux/ fizz",
+					"// paths": "this needs its own regex because the catchall regex requires begining and ending with \\w",
 					"// catch$all@words1": "only excludes chars that can come directly after words in properly styled code (don't want to select `foo(bar` in `foo(bar, baz)`, `Foo<T` in `type Foo<T extends Bar>`, or `baz;` in `foo = baz;`)",
 					"// catch$all@words2": "starts with \\w so we don't select parts of bigger compound words (like `:hidden` in `data-[state=closed]:hidden`)",
 					"// catch$all@words3": "ends with \\w so we don't select periods at ends of sentences or `foo-` in `foo-[bar]`",
@@ -43,6 +44,7 @@
 						"!2: dashed-words": "[\\w\\-]+\\w",
 						"dashed-and-dotted.words": "[\\w\\-.]+\\w",
 						"!1: tailwind rules": "[\\w\\-]+\\w(-\\[[^\\]]*\\])?(:[\\w\\-]+\\w(-\\[[^\\]]*\\])?)*(\\/(\\d+|\\[[\\d.]+\\]))?",
+						"paths": "([\\w\\d\\-.~$/])+",
 						"catch$all@words": "\\w[^\\s;,<>(){}\\[\\]'`\"]+\\w"
 					}
 				}
