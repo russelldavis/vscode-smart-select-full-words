@@ -51,6 +51,11 @@ function compareRanges(a: vs.Range, b: vs.Range) {
 
 export function activate(context: vs.ExtensionContext) {
   const config = vs.workspace.getConfiguration("smartSelectFullWords");
+
+  context.subscriptions.push(
+    vs.commands.registerTextEditorCommand("smartSelectFullWords.expand", expand)
+  );
+
   vs.languages.registerSelectionRangeProvider({pattern: "**"}, {
     provideSelectionRanges(document, positions) {
       try {
@@ -65,6 +70,7 @@ export function activate(context: vs.ExtensionContext) {
             if (!regexStr) return [];
 
             const regex = new RegExp(regexStr);
+            // Core logic for this is here: https://github.com/microsoft/vscode/blob/2346f95977a70247a43b3a5fde16a370d3658032/src/vs/editor/common/core/wordHelper.ts#L98
             const wordRange = document.getWordRangeAtPosition(position, regex);
             if (!wordRange) return [];
 
@@ -83,7 +89,7 @@ export function activate(context: vs.ExtensionContext) {
               immediateSelectionName = name;
               immediateSelectionRange = range;
             }
-            console.log("matched:", wordText, "regex:", regexStr);
+            console.log("matched:", wordText, "\nname:", name, "\nregex:", regexStr);
             return range;
           });
           if (ranges.length === 0) {
@@ -116,10 +122,6 @@ export function activate(context: vs.ExtensionContext) {
       }
     }
   });
-
-  context.subscriptions.push(
-    vs.commands.registerTextEditorCommand("smartSelectFullWords.expand", expand)
-  );
 }
 
 export function deactivate() {}

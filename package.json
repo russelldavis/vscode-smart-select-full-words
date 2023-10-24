@@ -35,17 +35,16 @@
 					"// test tailwind": "foo-bar-[rgb(1,2,3)] group:data-[state=foo]:bar-[rgb(1,2,3)] foo-bar/50, foo-bar/[0.2] foo/2 foo@bar@[baz] foo[bar]",
 					"// test subwords": "foo_bar fooBar",
 					"// test function": "foo(bar, 1, 'baz')",
-					"// test path": "foo /bar/baz/qux/ fizz",
-					"// paths": "this needs its own regex because the catchall regex requires begining and ending with \\w",
+					"// test path": "foo /bar/baz/qux/ fizz /at-end/of-string/",
+					"// test catchall": "foo$bar bar[]@foo sentence-period. next-sentence",
 					"// catch$all@words1": "only excludes chars that can come directly after words in properly styled code (don't want to select `foo(bar` in `foo(bar, baz)`, `Foo<T` in `type Foo<T extends Bar>`, or `baz;` in `foo = baz;`)",
-					"// catch$all@words2": "starts with \\w so we don't select parts of bigger compound words (like `:hidden` in `data-[state=closed]:hidden`)",
-					"// catch$all@words3": "ends with \\w so we don't select periods at ends of sentences or `foo-` in `foo-[bar]`",
+					"// catch$all@words2": "the starting clause of the regex is so we don't select parts of bigger compound words (like `:hidden` in `data-[state=closed]:hidden`)",
+					"// catch$all@words3": "the ending clause is so we don't select `foo-` in `foo-[bar]`, with an extra part so we don't select periods at ends of sentences",
 					"default": {
 						"!2: dashed-words": "[\\w\\-]+\\w",
 						"dashed-and-dotted.words": "[\\w\\-.]+\\w",
 						"!1: tailwind rules": "[\\w\\-]+\\w(-\\[[^\\]]*\\])?(:[\\w\\-]+\\w(-\\[[^\\]]*\\])?)*(\\/(\\d+|\\[[\\d.]+\\]))?",
-						"paths": "([\\w\\d\\-.~$/])+",
-						"catch$all@words": "\\w[^\\s;,<>(){}\\[\\]'`\"]+\\w"
+						"catch$all@words": "((?=\\w)|(?<=[\\s'`\"]|^))[^\\s;,<>(){}\\[\\]'`\"]+((?<=\\w)|(?=[\\s'`\"]|$)(?<!\\.))"
 					}
 				}
 			}
